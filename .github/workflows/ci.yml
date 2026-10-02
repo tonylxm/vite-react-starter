@@ -1,0 +1,43 @@
+# Copy to .github/workflows/ci.yml. Next.js + pnpm by default; swap the job for the .NET or uv variant below.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4 # reads "packageManager" from package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+# --- .NET variant (replace steps after checkout) ---
+#     - uses: actions/setup-dotnet@v5
+#       with: { dotnet-version: 9.x }
+#     - run: dotnet format --verify-no-changes
+#     - run: dotnet build --configuration Release
+#     - run: dotnet test --no-build --configuration Release
+
+# --- Python + uv variant (replace steps after checkout) ---
+#     - uses: astral-sh/setup-uv@v6
+#     - run: uv sync --locked
+#     - run: uv run ruff check
+#     - run: uv run ruff format --check
+#     - run: uv run pytest
