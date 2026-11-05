@@ -1,4 +1,3 @@
-# Copy to .github/workflows/ci.yml. Next.js + pnpm by default; swap the job for the .NET or uv variant below.
 name: CI
 
 on:
@@ -37,16 +36,34 @@ jobs:
           | grep '^VITE_' | tr -d '"' >> "$GITHUB_ENV"
       - run: pnpm test:db
 
-# --- .NET variant (replace steps after checkout) ---
-#     - uses: actions/setup-dotnet@v5
-#       with: { dotnet-version: 9.x }
-#     - run: dotnet format --verify-no-changes
-#     - run: dotnet build --configuration Release
-#     - run: dotnet test --no-build --configuration Release
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
 
-# --- Python + uv variant (replace steps after checkout) ---
-#     - uses: astral-sh/setup-uv@v6
-#     - run: uv sync --locked
-#     - run: uv run ruff check
-#     - run: uv run ruff format --check
-#     - run: uv run pytest
+  # Kept for private repos created from this template: GitHub secret scanning is a paid add-on on
+  # personal accounts, so scan with gitleaks. Public repos with secret scanning on can delete this job.
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3 # orgs also need env GITLEAKS_LICENSE
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
