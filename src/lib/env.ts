@@ -1,7 +1,9 @@
 import { z } from "zod";
 
+// Public values only: VITE_ vars are baked into the browser bundle.
 const schema = z.object({
-  VITE_API_URL: z.url(),
+  VITE_SUPABASE_URL: z.url(),
+  VITE_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
 });
 
 export type Env = z.infer<typeof schema>;

@@ -13,7 +13,7 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6 # reads "packageManager" from package.json
@@ -27,6 +27,15 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+      # Integration tests (RLS policies, API auth) against a local Supabase stack with the committed migrations.
+      - run: pnpm supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Export local Supabase env
+        run: >
+          pnpm --silent supabase status -o env
+          --override-name api.url=VITE_SUPABASE_URL
+          --override-name auth.publishable_key=VITE_SUPABASE_PUBLISHABLE_KEY
+          | grep '^VITE_' | tr -d '"' >> "$GITHUB_ENV"
+      - run: pnpm test:db
 
 # --- .NET variant (replace steps after checkout) ---
 #     - uses: actions/setup-dotnet@v5

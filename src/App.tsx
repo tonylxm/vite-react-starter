@@ -1,10 +1,17 @@
+import { Navigate, Route, Routes } from "react-router";
+import { RequireAuth } from "@/components/require-auth";
+import { LoginPage } from "@/pages/login";
+import { NotesPage } from "@/pages/notes";
+
+// Deny by default: every route goes inside RequireAuth unless it's listed as public here.
 export default function App() {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col justify-center gap-4 px-4 py-16 sm:px-8">
-      <h1 className="text-3xl font-semibold tracking-tight">Hello world</h1>
-      <p className="text-muted-foreground">
-        Walking skeleton. Replace this page with the first vertical slice.
-      </p>
-    </main>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<RequireAuth />}>
+        <Route path="/" element={<NotesPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   );
 }
