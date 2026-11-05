@@ -30,7 +30,7 @@ Then:
 | Script                                           | Does                                                                      |
 | ------------------------------------------------ | ------------------------------------------------------------------------- |
 | `dev` / `build` / `preview`                      | Vite (SPA only, no `/api`). `vercel dev` runs the SPA and API together    |
-| `lint` / `format` / `format:check` / `typecheck` | oxlint (the Vite scaffolder's default), Prettier, `tsc -b`                |
+| `lint` / `format` / `format:check` / `typecheck` | oxlint (type-aware, deprecated APIs are errors), Prettier, `tsc -b`       |
 | `test`                                           | Vitest (unit, component and API auth)                                     |
 | `test:db`                                        | Vitest integration tests against `pnpm supabase start` (RLS, API + JWT)   |
 | `test:e2e`                                       | Playwright smoke tests (run `pnpm exec playwright install chromium` once) |
@@ -53,4 +53,4 @@ Then:
 - **Env validation**: `src/lib/env.ts` for the browser (checked when `src/lib/supabase.ts` loads, before the app renders) and the schema at the top of `api/index.ts`. A missing var fails with a clear message. `VITE_` vars are baked in at build time and are public, so never put secrets in them.
 - `@/*` path alias, set in `tsconfig.json`, `tsconfig.app.json` and `vite.config.ts`.
 - CI (`.github/workflows/ci.yml`) and Dependabot, copied from the project-starter skill. CI also starts local Supabase and runs `test:db`.
-- A pre-commit hook that runs lint-staged (auto-fix only, no tests).
+- A pre-commit hook that scans staged changes for secrets with gitleaks (`brew install gitleaks`), then runs lint-staged (auto-fix only, no tests).

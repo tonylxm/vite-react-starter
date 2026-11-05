@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type SubmitEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,7 +37,7 @@ export function NotesPage() {
     };
   }, [version]);
 
-  async function addNote(event: FormEvent<HTMLFormElement>) {
+  async function addNote(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const { error } = await supabase.from("notes").insert({ body });
     if (error) {

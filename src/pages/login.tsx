@@ -26,7 +26,8 @@ async function authenticate(
   _previous: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const typedEmail = String(formData.get("email") ?? "");
+  const rawEmail = formData.get("email");
+  const typedEmail = typeof rawEmail === "string" ? rawEmail : "";
   const parsed = credentialsSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return {
